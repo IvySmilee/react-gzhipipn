@@ -1,24 +1,30 @@
 /*包含多个用于生成新的state的reducer函数的模块*/
+
+//引入合并函数模块
 import {combineReducers} from 'redux'
+//引入action的type模块
+import {AUTH_SUCCESS,ERROR_MSG} from './action-types'
 
-function xxx(state=0,action){
+const initUser={
+  username:'',
+  type:'',
+  msg:'',  //错误信息
+  redirectTo:'',  //需要自动重定向的path
+};
+
+function user(state=initUser,action){
   switch (action.type) {
-
+    case AUTH_SUCCESS:
+      return {...action.data,redirectTo:'/'};
+    case ERROR_MSG:
+      return {...state,msg:action.data};
     default:
-      return state
+      return state;
   }
 }
 
-function yyy(state=0,action){
-  switch (action.type) {
-
-    default:
-      return state
-  }
-}
-
-//返回合并后的reducer函数
+//向外暴露一个整合多个函数产生的reducer
 export default combineReducers({
-    xxx,
-    yyy
+    user
 });
+//整合的reducer管理的状态：{user：{}}
