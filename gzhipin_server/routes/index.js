@@ -43,22 +43,23 @@ router.post('/register',function(req,res){
   //2.处理数据  3.返回响应
   //2.1 根据username查询数据库，看是否存在
   UserModel.findOne({username},function(err,user){
-    console.log(username);
+    // console.log(username);
     //3.1 如果user存在，返回响应：此用户已存在
     if(user){
       console.log(user);
       //code是数据是否是正常数据的标识，1：存在，0：不存在
       res.send({code:1,msg:'此用户已存在'})
     }else{
-      console.log('no user')
+      // console.log('no user')
       //2.2 如果user不存在，将提交的user数据保存到数据库
       new UserModel({username,password:md5(password),type}).save(function(err,user){
+        const userid=user._id;
         //生成一个cookie（userid：user._id),并交给浏览器保存
         //持久化cookie(一周)，浏览器会保存在本地文件
-        res.cookie('userid',user._id,{maxAge:1000*60*60*24*7});
+        res.cookie('userid',userid,{maxAge:1000*60*60*24*7});
         //3.2 保存成功，返回成功:返回的数据中不要携带password
-        res.send({code:0,data:{_id:user._id,username,type}})
-        console.log({username,password:md5(password),type})
+        res.send({code:0,data:{_id:userid,username,type}})
+        // console.log({username,password:md5(password),type})
       })
     }
   })
@@ -79,9 +80,35 @@ router.post('/login',function(req,res){
       //持久化cookie(一周)，浏览器会保存在本地文件
       res.cookie('userid',user._id,{maxAge:1000*60*60*24*7});
       //3.2 如果user有值，返回user,user 中没有password
-      res.send({code:0,data:{user}})
+      res.send({code:0,data:user })
     }
   })
 });
+
+//三、更新用户路由
+router.post('/update',function(req,res){
+  //得到请求cookie的userid
+  const userid=req.cookies.userid;
+  //如果没有，说明没有登录，直接返回提示
+  if(!userid){
+    return res.send({code:1,msg:'请先登录'})
+  }
+  //如果有，更新数据库中对应的数据
+  UserModel.findByIdAndUpdate({_id:userid},req.body,function (err,user) {
+    //user是数据库中原来的数据
+    /*更新合并user信息*/
+    const {_id,username,type}=user;
+    // node端 ...不可用
+    // const data = {...req.body, _id, username, type}
+    // 合并用户信息，
+    /*Object.assign(obj1, obj2, obj3,...)将多个指定的对象合并为一个对象，
+        如果有重复的属性，后面会覆盖前面的
+    */
+    const data=Object.assign(req.body,{_id,username,type});
+
+    res.send({code:0,data})
+  })
+});
+
 
 module.exports = router;
