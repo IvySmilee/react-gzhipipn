@@ -1,11 +1,17 @@
 /*用户登录的路由组件*/
 import React,{Component} from 'react'
 import {connect} from 'react-redux'
+import {Switch,Route} from 'react-router-dom'
+import DashenInfo from '../dashen-info/dashen-info'
+import LaobanInfo from '../laoban-info/laoban-info'
 
 class Main extends Component{
   render(){
     return (
-      <div>main路由</div>
+      <Switch>
+        <Route path='/dasheninfo' component={DashenInfo}/>
+        <Route path='/laobaninfo' component={LaobanInfo}/>
+      </Switch>
     )
   }
 }
