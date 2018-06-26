@@ -110,5 +110,25 @@ router.post('/update',function(req,res){
   })
 });
 
+//四、获取当前user（根据cookie）
+router.get('/user',function(req,res){
+  //取出cookies中的的user,上面存的是userid，取userid
+  const userid=req.cookies.userid;
+  if(!userid){
+    return res.send({code:1,msg:'请先登录'})
+  }
+  //查询对应对应的user
+  UserModel.findOne({_id:userid},filter,function(err,user){
+    return res.send({code:0,data:user})
+  })
+});
+
+//五、查看用户列表
+router.get('/userlist',function(req,res){
+  const {type}=req.query;
+  UserModel.find({type},filter,function (err,users) {
+    return res.send({code:0,data:users});//json通过send作用一样
+  })
+});
 
 module.exports = router;
