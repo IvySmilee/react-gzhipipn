@@ -3,7 +3,7 @@
 //引入合并函数模块
 import {combineReducers} from 'redux'
 //引入action的type模块
-import {AUTH_SUCCESS,ERROR_MSG,RESET_USER,RECEIVE_USER} from './action-types'
+import {AUTH_SUCCESS,ERROR_MSG,RESET_USER,RECEIVE_USER,RECEIVE_USER_LIST} from './action-types'
 
 //引入跳转路径模块
 import {getRedirectPath} from '../utils'
@@ -31,8 +31,19 @@ function user(state=initUser,action){
   }
 }
 
+const initUserList = []
+function userList(state=initUserList, action) {
+  switch (action.type) {
+    case RECEIVE_USER_LIST:
+      return action.data
+    default:
+      return state
+  }
+}
+
 //向外暴露一个整合多个函数产生的reducer
 export default combineReducers({
-    user
+  user,
+  userList
 });
 //整合的reducer管理的状态：{user：{}}

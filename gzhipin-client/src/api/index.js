@@ -24,3 +24,9 @@ export const reqRegister=({username,password,type})=>{
 export const reqUpdateUser=(user)=>{
   return ajax(BASE_URL+'/update',user,'POST')
 };
+
+//获取当前用户
+export const reqUser=()=>ajax('/user');
+
+//请求用户列表
+export const reqUserList=(type)=>ajax('/userlist',{type});

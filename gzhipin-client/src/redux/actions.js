@@ -4,9 +4,9 @@
 * 异步action：与异步ajax请求个数一样
 * */
 //引入action的type模块
-import {AUTH_SUCCESS,ERROR_MSG,RECEIVE_USER,RESET_USER} from './action-types'
+import {AUTH_SUCCESS,ERROR_MSG,RECEIVE_USER,RESET_USER,RECEIVE_USER_LIST} from './action-types'
 //引入api
-import {reqLogin,reqRegister,reqUpdateUser} from '../api'
+import {reqLogin,reqRegister,reqUpdateUser,reqUser,reqUserList} from '../api'
 
 /*同步action*/
 //请求成功的同步action
@@ -16,7 +16,10 @@ const errorMsg=(msg)=>({type:ERROR_MSG,data:msg});
 //同步接受用户
 const receiveUser=(user)=>({type:RECEIVE_USER,data:user});
 //同步重置用户
-const resetUser=(msg)=>({type:RESET_USER,data:msg});
+export const resetUser=(msg)=>({type:RESET_USER,data:msg});
+//接收用户列表的同步action
+const receiveUserList=(users)=>({type:RECEIVE_USER_LIST,data:users});
+
 
 /*异步action*/
 //注册的异步action
@@ -69,7 +72,7 @@ export const login=(username,password)=>{
   }
 };
 
-//更新用户的同步action
+//更新用户的异步action
 export const updateUser=(user)=>{
   return async dispatch=>{
     const res=await reqUpdateUser(user);
@@ -82,6 +85,34 @@ export const updateUser=(user)=>{
   }
 };
 
+//获取当前用户的异步action
+export const getUser=()=>{
+  return async dispatch=>{
+    const res=await reqUser();
+    // console.log(res)
+    const result=res.data;
+    console.log(result);
+    if(result.code===0){
+      dispatch(receiveUser(result.data))
+    }else{
+      dispatch(resetUser(result.msg))
+    }
+  }
+};
+
+//获取用户列表的异步action
+export const getUserList=(type)=>{
+  return async dispatch=>{
+    // console.log(type);
+    const res=await reqUserList(type);
+    // console.log(res);
+    const result=res.data;
+    if(result.code===0){  //{code:0,data:users}
+      console.log(result.data);
+      dispatch(receiveUserList(result.data))
+    }
+  }
+};
 /*
 *async 和 await 的作用？
 *   简化promise编码
