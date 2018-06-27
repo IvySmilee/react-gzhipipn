@@ -4,9 +4,42 @@
 * 异步action：与异步ajax请求个数一样
 * */
 //引入action的type模块
-import {AUTH_SUCCESS,ERROR_MSG,RECEIVE_USER,RESET_USER,RECEIVE_USER_LIST} from './action-types'
+import {AUTH_SUCCESS,ERROR_MSG,RECEIVE_USER,RESET_USER,
+  RECEIVE_USER_LIST,RECEIVE_CHAT,RECEIVE_MSG} from './action-types'
 //引入api
-import {reqLogin,reqRegister,reqUpdateUser,reqUser,reqUserList} from '../api'
+import {reqLogin,reqRegister,reqUpdateUser,reqUser,
+  reqUserList,reqChatMsgList} from '../api'
+//引入实时聊天前端依赖库
+import io from 'socket.io-client'
+
+//连接服务器，得到代表连接的socket对象
+const socket=io('ws://localhost:4000');
+
+/*初始化socketio，绑定监听服务器发送的消息*/
+function initSocketIO(userid,dispatch){
+  socket.on('receiveMsg',function(chatMsg){
+    if(chatMsg.from===userid || chatMsg.to===userid){
+      console.log('接收到一条需要显示的消息');
+      dispatch(receiveMsg(chatMsg))
+    }else{
+      console.log('接收到与我无关的消息');
+    }
+  })
+}
+
+/*获取当前用户相关的所有聊天信息的异步action*/
+async function getMsgList(userid,dispatch){
+  initSocketIO(userid,dispatch);
+  const res=await reqChatMsgList();
+  const result=res.data;
+  if(result.code===0){
+    //result为：{user:{},chatMsg:[]}
+    console.log('获取到当前用户的所有相关的聊天信息',result.data);
+    dispatch(receiveChat(result.data));
+  }
+}
+
+
 
 /*同步action*/
 //请求成功的同步action
@@ -18,7 +51,12 @@ const receiveUser=(user)=>({type:RECEIVE_USER,data:user});
 //同步重置用户
 export const resetUser=(msg)=>({type:RESET_USER,data:msg});
 //接收用户列表的同步action
-const receiveUserList=(users)=>({type:RECEIVE_USER_LIST,data:users});
+const receiveUserList=(users =>({type:RECEIVE_USER_LIST,data:users}));
+//接收聊天相关信息的同步action
+const receiveChat=({users,chatMsgs})=>({type:RECEIVE_CHAT,data:{users,chatMsgs}});
+//接收一条新的聊天消息
+const receiveMsg=(chatMsg)=>({type:RECEIVE_MSG,data:chatMsg});
+
 
 
 /*异步action*/
@@ -44,6 +82,7 @@ export const register=({username,password,password2,type})=>{
     const result=res.data; //{code:0/1,data/msg:??}
     if(result.code===0){  //注册成功
       const user=result.data;
+      getMsgList(user._id,dispatch);  //新用户不需要在最开始获取消息列表
       dispatch(authSuccess(user));  //分发成功的同步action
     }else{    //注册失败
       dispatch(errorMsg(result.msg)); //分发失败的同步action
@@ -65,6 +104,7 @@ export const login=(username,password)=>{
     const result=res.data; //{code:0/1,data/msg:??}
     if(result.code===0){  //注册成功
       const user=result.data;
+      getMsgList(user._id,dispatch);
       dispatch(authSuccess(user));  //分发一个成功的同步action
     }else{    //注册失败
       dispatch(errorMsg(result.msg)); //分发一个失败的同步action
@@ -89,10 +129,9 @@ export const updateUser=(user)=>{
 export const getUser=()=>{
   return async dispatch=>{
     const res=await reqUser();
-    // console.log(res)
     const result=res.data;
-    console.log(result);
     if(result.code===0){
+      getMsgList(result.data._id,dispatch);
       dispatch(receiveUser(result.data))
     }else{
       dispatch(resetUser(result.msg))
@@ -103,16 +142,24 @@ export const getUser=()=>{
 //获取用户列表的异步action
 export const getUserList=(type)=>{
   return async dispatch=>{
-    // console.log(type);
     const res=await reqUserList(type);
-    // console.log(res);
     const result=res.data;
     if(result.code===0){  //{code:0,data:users}
-      console.log(result.data);
       dispatch(receiveUserList(result.data))
     }
   }
 };
+
+
+/*聊天发送消息的异步action*/
+export const sendMsg=({from,to,content})=>{
+  return dispatch=>{   //这里是socket分发消息，不用dispatch，但是返回结果必须是一个函数
+    //向服务器发消息
+    console.log('浏览器向服务器发送消息',from,to,content);
+    socket.emit('sendMsg',{from,to,content})
+  }
+};
+
 /*
 *async 和 await 的作用？
 *   简化promise编码

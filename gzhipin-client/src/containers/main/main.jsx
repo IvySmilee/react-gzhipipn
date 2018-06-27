@@ -13,6 +13,7 @@ import Message from '../message/message'
 import Personal from '../personal/personal'
 import NotFound from '../../components/not-found/not-found'
 import NavFooter from '../../components/nav-footer/nav-footer'
+import Chat from '../chat/chat'
 
 import {getUser} from '../../redux/actions'
 import {getRedirectPath} from '../../utils'
@@ -57,11 +58,8 @@ class Main extends Component{
     //cookies中有userid，redux中没有user._id，实现自动登录
     const userid=Cookies.get('userid');
     const user=this.props.user;
-    console.log(user)
     if(userid && !user._id){ //以前登录过，当前没有登录时进入
-      console.log(userid,user._id)
       this.props.getUser(); //发送请求获取用户信息，实现自动登录
-      console.log(user)
     }
   }
 
@@ -99,8 +97,6 @@ class Main extends Component{
     //取出redux(state)中的user._id，如果cookies中有userid时执行
     const user=this.props.user;
     //判断：user._id是否存在，如果不存在返回空
-    console.log(this.props);
-    console.log(user);
     if(!user._id){
       return null;
     }
@@ -126,7 +122,7 @@ class Main extends Component{
 
     return (
       <div>
-        {currentNav? <NavBar>{currentNav.title}</NavBar> : null}
+        {currentNav? <NavBar className='stick-top'>{currentNav.title}</NavBar> : null}
         <Switch>
           <Route path= '/dasheninfo' component={DashenInfo}/>
           <Route path='/laobaninfo' component={LaobanInfo}/>
@@ -134,6 +130,7 @@ class Main extends Component{
           <Route path='/dashen' component={Dashen}/>
           <Route path='/message' component={Message}/>
           <Route path='/personal' component={Personal}/>
+          <Route path='/chat/:userid' component={Chat}/>
           <Route component={NotFound}/>
         </Switch>
         {currentNav? <NavFooter navList={navList}/> : null}

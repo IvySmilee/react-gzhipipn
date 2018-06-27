@@ -19,7 +19,7 @@ export default class HeaderSelector extends Component{
   };
   render(){
     const {icon}=this.state;
-    const header=!icon ? '请选择头像' : <p>已选择头像：<img src={icon}/></p>;
+    const header=!icon ? '请选择头像' : <p>已选择头像：<img src={icon} alt='头像'/></p>;
     const headers=[];
     //遍历头像，生成头像信息数组
     for (var i = 0; i <20; i++) {

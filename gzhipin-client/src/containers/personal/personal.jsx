@@ -1,7 +1,6 @@
 /*用户个人中心路由组件*/
 import React,{Component} from 'react'
 import {Result,List,WhiteSpace,Button,Modal} from 'antd-mobile'
-import {Connect} from 'react-redux'
 import Cookies from 'js-cookie'
 import {resetUser} from '../../redux/actions'
 import {connect} from "react-redux";
@@ -26,9 +25,9 @@ class Personal extends Component{
   };
 
   render(){
-    const {username,type,post,salary,info,company,header}=this.props.user;
+    const {username,post,salary,info,company,header}=this.props.user;
     return (
-      <div>
+      <div style={{marginBottom:50,marginTop:50}}>
         <Result
           img={<img src={require(`../../assets/imgs/${header}.png`)} style={{width:50}} alt='header'/>}
           title={username}

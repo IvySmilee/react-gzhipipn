@@ -11,3 +11,8 @@ export const RECEIVE_USER='receive_user';
 export const RESET_USER='reset_user';
 //接收用户列表
 export const RECEIVE_USER_LIST='receive_user_list';
+// 接收接收当前用户相关的消息列表集合
+export const RECEIVE_CHAT = 'receive_chat';
+// 接收一条聊天消息
+export const RECEIVE_MSG = 'receive_msg';
+//
