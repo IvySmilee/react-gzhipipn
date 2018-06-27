@@ -40,3 +40,22 @@ const userSchema=mongoose.Schema({
 const UserModel=mongoose.model('user',userSchema);
 // 2.3. 向外暴露Model
 exports.UserModel=UserModel;
+
+/*3.定义实时聊天集合对象的Model，并向外暴露*/
+//3.1定义chats集合的文档结构
+const chatSchema=mongoose.Schema({
+  from:{type:String,required:true},//发送消息的用户id
+  to:{type:String,required:true},//接收消息的用户id
+  chat_id:{type:String,required:true},//当前聊天的id：from和to的组合
+  content:{type:String,required:true},//聊天的内容
+  read:{type:Boolean,default:false},//消息默认为未读
+  create_time:{type:Number}//这条数据的创建时间
+});
+//3.2 定义能操作chats集合数据的Model
+const ChatModel=mongoose.model('chat',chatSchema);
+//3.3向外暴露Model
+exports.ChatModel=ChatModel;
+
+
+
+

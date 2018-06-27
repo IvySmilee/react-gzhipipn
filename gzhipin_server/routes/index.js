@@ -1,8 +1,11 @@
 var express = require('express');
 var router = express.Router();
 
-//引入UserModel
-const {UserModel}=require('../db/models');
+//引入UserModel，ChatModel
+const models2 = require('../db/models');
+const UserModel=models2.UserModel;
+const ChatModel=models2.ChatModel;
+
 //引入md5加密模块
 const md5=require('blueimp-md5');
 
@@ -127,8 +130,53 @@ router.get('/user',function(req,res){
 router.get('/userlist',function(req,res){
   const {type}=req.query;
   UserModel.find({type},filter,function (err,users) {
-    return res.send({code:0,data:users});//json通过send作用一样
+    res.send({code:0,data:users});//json通过send作用一样
   })
 });
+
+//六、查询获取当前用户所有相关聊天信息列表
+router.get('/msglist',function(req,res){
+  //获取cookie中的userid
+  const userid=req.cookies.userid;
+  //查询得到所有user文档数据
+  UserModel.find(function(err,userDocs){
+    //用对象储存所有的user信息：key为user的_id,val为name和header组成的user对象
+    const users={};//对象容器
+    userDocs.forEach(doc=>{
+      /*users为对象，——id为属性，属性值也是对象，里面有用户名和头像两个属性*/
+      users[doc._id]={username:doc.username,header:doc.header};
+    });
+    /*
+    * 查询userid相关的所有聊天信息：
+    *   参数1：查询条件
+    *   参数2：过滤条件
+    *   参数3：回调函数
+    * */
+    ChatModel.find({'$or':[{from:userid},{to:userid}]},filter,function(err,chatMsgs){
+      //返回包含所有用户和当前用户相关的所有聊天消息的数据
+      //chatMsg是一个数组，里面是：包含所有用户和当前用户所有聊天消息的数据
+      res.send({code:0,data:{users,chatMsgs}})
+    })
+  })
+});
+
+//七、修改指定消息为已读
+router.post('/readmsg', function (req, res) {
+  // 得到请求中的from和to
+  const from = req.body.from;
+  const to = req.cookies.userid;
+  /*
+  更新数据库中的chat数据
+  参数1: 查询条件
+  参数2: 更新为指定的数据对象
+  参数3: 是否1次更新多条, 默认只更新一条
+  参数4: 更新完成的回调函数
+   */
+  ChatModel.update({from, to, read: false}, {read: true}, {multi: true}, function (err, doc) {
+    console.log('/readmsg', doc);
+    res.send({code: 0, data: doc.nModified}) // 更新的数量
+  })
+});
+
 
 module.exports = router;
