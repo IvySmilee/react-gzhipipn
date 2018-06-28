@@ -15,4 +15,5 @@ export const RECEIVE_USER_LIST='receive_user_list';
 export const RECEIVE_CHAT = 'receive_chat';
 // 接收一条聊天消息
 export const RECEIVE_MSG = 'receive_msg';
-//
+//消息已更新为已读
+export const MSG_UPDATE='msg_update';

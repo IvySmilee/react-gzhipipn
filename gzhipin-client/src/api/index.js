@@ -28,4 +28,5 @@ export const reqUserList=(type)=>ajax('/userlist',{type});
 
 //请求获取当前用户的所有聊天记录
 export const reqChatMsgList=()=>ajax('/msglist');
-
+//表示查看了指定用户发送的聊天信息
+export const reqReadChatMsg=(from)=>ajax('/readmsg',{from},'POST');

@@ -2,7 +2,8 @@
 import React,{Component} from 'react'
 import {NavBar,List,InputItem,Icon,Grid} from 'antd-mobile'
 import {connect} from 'react-redux'
-import {sendMsg} from "../../redux/actions";
+import {sendMsg,updateMsg} from "../../redux/actions";
+
 
 const Item=List.Item;
 
@@ -31,15 +32,20 @@ class Chat extends Component{
     const emojis = ['😀', '😁', '🤣','😀', '😁', '🤣','😀', '😁', '🤣','😀', '😁', '🤣','😀'
       ,'😁', '🤣','😀', '😁', '🤣','😀', '😁', '🤣','😀', '😁', '🤣'
       ,'😁', '🤣','😀', '😁', '🤣','😀', '😁', '🤣','😀', '😁', '🤣'
-      ,'😁', '🤣','😀', '😁', '🤣','😀', '😁', '🤣','😀', '😁', '🤣']
+      ,'😁', '🤣','😀', '😁', '🤣','😀', '😁', '🤣','😀', '😁', '🤣'];
     this.emojis = emojis.map(value => ({text: value}))
     // console.log(this.emojis)
   };
 
-  //打开界面，自动滚动到聊天底部
+  //初始化，打开界面，自动滚动到聊天底部
   componentDidMount(){
     //初始显示列表
     window.scrollTo(0,document.body.scrollHeight);
+
+  /*  //上来更新消息
+    const from=this.props.match.params.userid; //获取到聊天对象的id
+    const to=this.props.user._id; //得到当前用户的id
+    this.props.updateMsg(from,to);*/
   };
 
   //更新后，自动滚动到底部
@@ -48,6 +54,12 @@ class Chat extends Component{
     window.scrollTo(0,document.body.scrollHeight);
   }
 
+  //退出，死亡前调用，每一次渲染前都会调用，除了第一次渲染
+  componentWillUnmount(){
+    const from=this.props.match.params.userid; //获取到聊天对象的id
+    const to=this.props.user._id; //得到当前用户的id
+    this.props.updateMsg(from,to);
+  }
   //切换表情列表的显示
   toggleShow=()=>{
     const isShow=!this.state.isShow;
@@ -77,7 +89,10 @@ class Chat extends Component{
     //对消息数组chatMsg进行过滤（保留当前用户的聊天记录）
     const currentMsgs=chatMsgs.filter(msg=>msg.chat_id===chatId);
     //msg to msg.from
-
+    /*解决新注册用户发消息时的bug*/
+    if(!targetUser){
+      window.location.reload();//网页重新加载
+    }
     const targetUser=users[targetId];
     const targetIcon=targetUser.header ? require(`../../assets/imgs/${targetUser.header}.png`) : null;
 
@@ -133,5 +148,5 @@ class Chat extends Component{
 
 export default connect(
   state=>({user:state.user,chat:state.chat}),
-  {sendMsg}
+  {sendMsg,updateMsg}
 )(Chat)

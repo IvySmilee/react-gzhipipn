@@ -5,10 +5,10 @@
 * */
 //引入action的type模块
 import {AUTH_SUCCESS,ERROR_MSG,RECEIVE_USER,RESET_USER,
-  RECEIVE_USER_LIST,RECEIVE_CHAT,RECEIVE_MSG} from './action-types'
+  RECEIVE_USER_LIST,RECEIVE_CHAT,RECEIVE_MSG,MSG_UPDATE} from './action-types'
 //引入api
 import {reqLogin,reqRegister,reqUpdateUser,reqUser,
-  reqUserList,reqChatMsgList} from '../api'
+  reqUserList,reqChatMsgList,reqReadChatMsg} from '../api'
 //引入实时聊天前端依赖库
 import io from 'socket.io-client'
 
@@ -17,14 +17,17 @@ const socket=io('ws://localhost:4000');
 
 /*初始化socketio，绑定监听服务器发送的消息*/
 function initSocketIO(userid,dispatch){
-  socket.on('receiveMsg',function(chatMsg){
-    if(chatMsg.from===userid || chatMsg.to===userid){
-      console.log('接收到一条需要显示的消息');
-      dispatch(receiveMsg(chatMsg))
-    }else{
-      console.log('接收到与我无关的消息');
-    }
-  })
+  if(!io.socket){
+    io.socket=socket;
+    socket.on('receiveMsg',function(chatMsg){
+      if(chatMsg.from===userid || chatMsg.to===userid){
+        console.log('接收到一条需要显示的消息');
+        dispatch(receiveMsg(chatMsg,userid));
+      }else{
+        console.log('接收到与我无关的消息');
+      }
+    })
+  }
 }
 
 /*获取当前用户相关的所有聊天信息的异步action*/
@@ -35,7 +38,7 @@ async function getMsgList(userid,dispatch){
   if(result.code===0){
     //result为：{user:{},chatMsg:[]}
     console.log('获取到当前用户的所有相关的聊天信息',result.data);
-    dispatch(receiveChat(result.data));
+    dispatch(receiveChat({...result.data,meId:userid}));
   }
 }
 
@@ -53,10 +56,11 @@ export const resetUser=(msg)=>({type:RESET_USER,data:msg});
 //接收用户列表的同步action
 const receiveUserList=(users =>({type:RECEIVE_USER_LIST,data:users}));
 //接收聊天相关信息的同步action
-const receiveChat=({users,chatMsgs})=>({type:RECEIVE_CHAT,data:{users,chatMsgs}});
+const receiveChat=({users,chatMsgs,meId})=>({type:RECEIVE_CHAT,data:{users,chatMsgs,meId}});
 //接收一条新的聊天消息
-const receiveMsg=(chatMsg)=>({type:RECEIVE_MSG,data:chatMsg});
-
+const receiveMsg=(chatMsg,meId)=>({type:RECEIVE_MSG,data:{chatMsg,meId}});
+//更新消息为已读
+const msgUpdate=({count,from,to})=>({type:MSG_UPDATE,data:{count,from,to}});
 
 
 /*异步action*/
@@ -159,6 +163,18 @@ export const sendMsg=({from,to,content})=>{
     socket.emit('sendMsg',{from,to,content})
   }
 };
+
+//更新消息为已读
+export const updateMsg=(from,to)=>{
+  return async (dispatch) => {
+    const res = await reqReadChatMsg(from);
+    const result=res.data; //{code:0,data:2}
+    if(result.code===0){
+      const count=result.data;
+      dispatch(msgUpdate({count,from,to}))
+    }
+  }
+}
 
 /*
 *async 和 await 的作用？
