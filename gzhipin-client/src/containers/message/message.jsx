@@ -81,6 +81,10 @@ class Message extends Component {
             lastMsgs.map((msg,index)=>{
               const targetId=msg.from===meId ? msg.to : msg.from;
               const targetUser=users[targetId];
+              /*解决新注册用户发消息时的bug*/
+              if(!targetUser){
+                window.location.reload();//网页重新加载
+              }
               const icon=targetUser.header ? require(`../../assets/imgs/${targetUser.header}.png`) : null;
               return (
                 <Item

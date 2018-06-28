@@ -89,10 +89,7 @@ class Chat extends Component{
     //对消息数组chatMsg进行过滤（保留当前用户的聊天记录）
     const currentMsgs=chatMsgs.filter(msg=>msg.chat_id===chatId);
     //msg to msg.from
-    /*解决新注册用户发消息时的bug*/
-    if(!targetUser){
-      window.location.reload();//网页重新加载
-    }
+
     const targetUser=users[targetId];
     const targetIcon=targetUser.header ? require(`../../assets/imgs/${targetUser.header}.png`) : null;
 

@@ -9,6 +9,7 @@ import {AUTH_SUCCESS,ERROR_MSG,RECEIVE_USER,RESET_USER,
 //引入api
 import {reqLogin,reqRegister,reqUpdateUser,reqUser,
   reqUserList,reqChatMsgList,reqReadChatMsg} from '../api'
+import Cookies from 'js-cookie'
 //引入实时聊天前端依赖库
 import io from 'socket.io-client'
 
@@ -20,7 +21,12 @@ function initSocketIO(userid,dispatch){
   if(!io.socket){
     io.socket=socket;
     socket.on('receiveMsg',function(chatMsg){
-      if(chatMsg.from===userid || chatMsg.to===userid){
+      //获取当前浏览器中的cookie中的userid，为当前登录用户的userid
+      let userId=Cookies.get('userid');
+      userId = userId.substring(3,userId.length-1);
+      console.log(userid,userId);
+      console.log(chatMsg.from===userId,chatMsg.to===userId);
+      if(chatMsg.from===userId || chatMsg.to===userId){
         console.log('接收到一条需要显示的消息');
         dispatch(receiveMsg(chatMsg,userid));
       }else{
